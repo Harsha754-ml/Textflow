@@ -2,7 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { Activity, History, Send, Server, Archive, MessageSquare, Users, Bot, BarChart3, Settings } from 'lucide-react';
 import { AppDataProvider, useAppData } from '../context/AppDataContext';
 import { useAuth } from '../context/AuthContext';
-import { StatusIndicator } from './StatusIndicator';
+import { formatLatency } from '../utils/format';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: Activity },
@@ -19,6 +19,7 @@ const navItems = [
 function Sidebar() {
   const { user } = useAuth();
   const roleLabel = user?.role || 'guest';
+  const initials = (user?.username || 'A').trim().charAt(0).toUpperCase();
 
   return (
     <aside className="sidebar">
@@ -44,10 +45,12 @@ function Sidebar() {
         })}
       </nav>
 
-      <div className="sidebar-footnote">
-        <div>{user?.username || 'Signed in user'}</div>
-        <div className="muted">{roleLabel}</div>
-        {roleLabel === 'viewer' ? <div className="muted">Read-only mode</div> : null}
+      <div className="sidebar-footer">
+        <div className="sidebar-avatar">{initials}</div>
+        <div className="sidebar-user-meta">
+          <div className="sidebar-username">{user?.username || 'admin'}</div>
+          <div className="sidebar-role-chip">{roleLabel}</div>
+        </div>
       </div>
     </aside>
   );
@@ -56,14 +59,19 @@ function Sidebar() {
 function Topbar() {
   const { status } = useAppData();
   const { logout } = useAuth();
+  const connected = Boolean(status?.reachable);
 
   return (
     <header className="topbar">
       <h1>SMS Dashboard</h1>
       <div className="topbar-status-row">
-        <StatusIndicator reachable={status.reachable} latencyMs={status.latencyMs} checking={false} />
-        <button type="button" className="btn btn-secondary topbar-logout" onClick={logout}>
-          Sign out
+        <div className={`topbar-connection ${connected ? 'online' : 'offline'}`}>
+          <span className="topbar-connection-dot" />
+          <span className="topbar-connection-label">{connected ? 'Connected' : 'Offline'}</span>
+          <span className="topbar-connection-latency">{formatLatency(status?.latencyMs)}</span>
+        </div>
+        <button type="button" className="topbar-signout" onClick={logout}>
+          Sign Out
         </button>
       </div>
     </header>
