@@ -4,6 +4,12 @@ import { deleteMessage, exportMessages, getMessage, getMessages, getQueue, getSt
 import { useAdaptivePolling } from '../hooks/useAdaptivePolling';
 
 const AppDataContext = createContext(null);
+const POLLING_DELAY_KEY = 'sms_dashboard_polling_delay_ms';
+
+function readPollingDelay() {
+  const stored = Number(window.localStorage.getItem(POLLING_DELAY_KEY));
+  return [5000, 10000, 30000].includes(stored) ? stored : 5000;
+}
 
 function readBlobAsDownload(blob, filename) {
   const url = window.URL.createObjectURL(blob);
@@ -21,6 +27,11 @@ export function AppDataProvider({ children }) {
   const [queue, setQueue] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [loadingMessageId, setLoadingMessageId] = useState(null);
+  const [pollingDelayMs, setPollingDelayMs] = useState(readPollingDelay);
+
+  useEffect(() => {
+    window.localStorage.setItem(POLLING_DELAY_KEY, String(pollingDelayMs));
+  }, [pollingDelayMs]);
 
   const refreshAll = useCallback(async () => {
     const [statusData, messageData, queueData] = await Promise.allSettled([getStatus(), getMessages({ page: 1, limit: 50 }), getQueue()]);
@@ -57,7 +68,7 @@ export function AppDataProvider({ children }) {
 
   useAdaptivePolling(refreshAll, {
     dependencies: [],
-    baseDelayMs: 5000,
+    baseDelayMs: pollingDelayMs,
     backoffDelayMs: 30000,
     failureThreshold: 3,
   });
@@ -122,8 +133,10 @@ export function AppDataProvider({ children }) {
     queue,
     selectedMessage,
     loadingMessageId,
+    pollingDelayMs,
     ...actions,
-  }), [status, messages, messageTotal, queue, selectedMessage, loadingMessageId, actions]);
+    setPollingDelayMs,
+  }), [status, messages, messageTotal, queue, selectedMessage, loadingMessageId, pollingDelayMs, actions]);
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
 }

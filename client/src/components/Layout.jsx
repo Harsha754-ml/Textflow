@@ -1,16 +1,25 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Activity, History, Send, Server, Archive } from 'lucide-react';
+import { Activity, History, Send, Server, Archive, MessageSquare, Users, Bot, BarChart3, Settings } from 'lucide-react';
 import { AppDataProvider, useAppData } from '../context/AppDataContext';
+import { useAuth } from '../context/AuthContext';
 import { StatusIndicator } from './StatusIndicator';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: Activity },
-  { to: '/send', label: 'Send SMS', icon: Send },
+  { to: '/compose', label: 'Compose', icon: Send },
+  { to: '/inbox', label: 'Inbox', icon: MessageSquare },
   { to: '/history', label: 'History', icon: History },
+  { to: '/contacts', label: 'Contacts', icon: Users },
+  { to: '/automation', label: 'Automation', icon: Bot },
+  { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { to: '/settings', label: 'Settings', icon: Settings },
   { to: '/queue', label: 'Queue', icon: Archive },
 ];
 
 function Sidebar() {
+  const { user } = useAuth();
+  const roleLabel = user?.role || 'guest';
+
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -35,19 +44,27 @@ function Sidebar() {
         })}
       </nav>
 
-      <div className="sidebar-footnote">Scheduled sends, retries, and CSV export are managed locally.</div>
+      <div className="sidebar-footnote">
+        <div>{user?.username || 'Signed in user'}</div>
+        <div className="muted">{roleLabel}</div>
+        {roleLabel === 'viewer' ? <div className="muted">Read-only mode</div> : null}
+      </div>
     </aside>
   );
 }
 
 function Topbar() {
   const { status } = useAppData();
+  const { logout } = useAuth();
 
   return (
     <header className="topbar">
-      <h1>SMS dashboard</h1>
-      <div className="topbar-status">
+      <h1>SMS Dashboard</h1>
+      <div className="topbar-status-row">
         <StatusIndicator reachable={status.reachable} latencyMs={status.latencyMs} checking={false} />
+        <button type="button" className="btn btn-secondary topbar-logout" onClick={logout}>
+          Sign out
+        </button>
       </div>
     </header>
   );

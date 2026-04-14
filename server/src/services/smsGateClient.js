@@ -4,8 +4,8 @@ const config = require('../config');
 function createClient() {
   const headers = {};
 
-  if (config.authType === 'basic' && config.username && config.password) {
-    headers.Authorization = `Basic ${Buffer.from(`${config.username}:${config.password}`).toString('base64')}`;
+  if (config.authType === 'basic' && config.smsUsername && config.smsPassword) {
+    headers.Authorization = `Basic ${Buffer.from(`${config.smsUsername}:${config.smsPassword}`).toString('base64')}`;
   }
 
   return axios.create({

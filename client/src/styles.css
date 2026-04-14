@@ -147,6 +147,18 @@ button {
   padding: 0 32px;
 }
 
+.topbar-status-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-logout {
+  height: 30px;
+  font-size: 12px;
+  padding: 0 10px;
+}
+
 .topbar h1 {
   margin: 0;
   font-size: 20px;
@@ -622,8 +634,203 @@ button {
   margin-bottom: 12px;
 }
 
+.inbox-layout {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.inbox-list,
+.inbox-thread-view {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.inbox-thread {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface-elevated);
+  border-radius: 6px;
+  color: var(--text-body);
+  text-align: left;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.inbox-thread.active {
+  border-color: var(--primary);
+}
+
+.inbox-messages {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.inbox-bubble {
+  max-width: 70%;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.inbox-bubble.inbound {
+  background: var(--surface-elevated);
+}
+
+.inbox-bubble.outbound {
+  margin-left: auto;
+  background: #1e3a5f;
+}
+
+.inbox-reply-row {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.inbox-reply-row input {
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0 12px;
+}
+
+.grid-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.grid-form input,
+.grid-form select {
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0 12px;
+}
+
+.col-span-3 {
+  grid-column: span 3;
+}
+
+.analytics-stats .stat-card {
+  min-height: 84px;
+}
+
+.analytics-summary-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.analytics-range-controls {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+}
+
+.field.compact {
+  gap: 4px;
+}
+
+.field.compact span {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.field.compact input,
+.field.compact select {
+  min-width: 160px;
+}
+
+.settings-control-row {
+  margin-top: 16px;
+  max-width: 280px;
+}
+
+.settings-control-row select {
+  width: 100%;
+}
+
+.webhook-events-box {
+  grid-column: span 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 0 4px;
+  color: var(--text-body);
+}
+
+.webhook-events-box label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.webhook-events-box input {
+  accent-color: var(--primary);
+}
+
+.settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.active-tab {
+  border-color: var(--primary);
+  color: var(--text);
+}
+
+.chart-box {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 8px;
+}
+
 .hero-panel {
   display: none;
+}
+
+.app-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+}
+
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.login-card {
+  width: min(360px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.login-btn {
+  width: 100%;
 }
 
 @keyframes spin {
@@ -685,5 +892,17 @@ button {
 
   .message-table {
     min-width: 720px;
+  }
+
+  .inbox-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-form {
+    grid-template-columns: 1fr;
+  }
+
+  .col-span-3 {
+    grid-column: span 1;
   }
 }

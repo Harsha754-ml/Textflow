@@ -2,10 +2,13 @@ import { Eye, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAppData } from '../context/AppDataContext';
+import { useAuth } from '../context/AuthContext';
 import { formatRelativeTimestamp } from '../utils/format';
 
 export function MessageTable() {
   const { messages, selectedMessage, loadingMessageId, loadMessage, closeMessage, removeMessage } = useAppData();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const statusFilter = searchParams.get('status') || 'all';
@@ -89,9 +92,11 @@ export function MessageTable() {
                       <button type="button" className="icon-btn" onClick={() => void loadMessage(message.id)} disabled={loadingMessageId === message.id}>
                         <Eye size={16} />
                       </button>
-                      <button type="button" className="icon-btn danger" onClick={() => void removeMessage(message.id)}>
-                        <Trash2 size={16} />
-                      </button>
+                      {isAdmin ? (
+                        <button type="button" className="icon-btn danger" onClick={() => void removeMessage(message.id)}>
+                          <Trash2 size={16} />
+                        </button>
+                      ) : null}
                     </div>
                   </td>
                 </tr>

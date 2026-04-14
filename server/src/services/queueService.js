@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const { randomUUID } = require('crypto');
 const smsGateClient = require('./smsGateClient');
+const { dispatchRegisteredWebhooks } = require('./automationService');
 
 const scheduledQueue = [];
 const messageHistory = [];
@@ -43,10 +44,15 @@ async function sendImmediately(payload, options = {}) {
       message: payload.message,
     });
 
-    const record = createMessageRecord(payload, 'sent', responseData);
+    const status = String(responseData?.state || 'sent').toLowerCase();
+    const record = createMessageRecord(payload, status, responseData);
 
     if (options.recordHistory !== false) {
       messageHistory.unshift(record);
+    }
+
+    if (status === 'delivered' || status === 'failed') {
+      void dispatchRegisteredWebhooks(status, record);
     }
 
     return { record, responseData };
@@ -56,6 +62,8 @@ async function sendImmediately(payload, options = {}) {
     if (options.recordHistory !== false) {
       messageHistory.unshift(record);
     }
+
+    void dispatchRegisteredWebhooks('failed', record);
 
     throw error;
   }

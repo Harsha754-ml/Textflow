@@ -55,7 +55,7 @@ export function SmsForm() {
       <div className="panel-header">
         <div>
           <div className="panel-kicker">Compose</div>
-          <h2>Send SMS</h2>
+          <h2>Compose message</h2>
         </div>
         <div className="muted">{characterCount} characters</div>
       </div>
