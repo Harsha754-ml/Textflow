@@ -1,5 +1,15 @@
 const { getDatabase } = require('../db');
 
+function parseJsonOrDefault(value, fallback) {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+
 function mapContactRow(row) {
   return {
     id: row.id,
@@ -7,6 +17,8 @@ function mapContactRow(row) {
     phone: row.phone,
     group_name: row.group_name,
     notes: row.notes,
+    tags: parseJsonOrDefault(row.tags, []),
+    dnc: !!row.dnc,
     created_at: row.created_at,
   };
 }
@@ -33,11 +45,13 @@ function listContacts({ group, search }) {
 
 function createContact(input) {
   const db = getDatabase();
-  const result = db.prepare('INSERT INTO contacts (name, phone, group_name, notes) VALUES (?, ?, ?, ?)').run(
+  const result = db.prepare('INSERT INTO contacts (name, phone, group_name, notes, tags, dnc) VALUES (?, ?, ?, ?, ?, ?)').run(
     input.name,
     input.phone,
     input.group_name || null,
     input.notes || null,
+    input.tags ? JSON.stringify(input.tags) : null,
+    input.dnc ? 1 : 0
   );
 
   const row = db.prepare('SELECT * FROM contacts WHERE id = ?').get(result.lastInsertRowid);
@@ -46,11 +60,13 @@ function createContact(input) {
 
 function updateContact(id, input) {
   const db = getDatabase();
-  db.prepare('UPDATE contacts SET name = ?, phone = ?, group_name = ?, notes = ? WHERE id = ?').run(
+  db.prepare('UPDATE contacts SET name = ?, phone = ?, group_name = ?, notes = ?, tags = ?, dnc = ? WHERE id = ?').run(
     input.name,
     input.phone,
     input.group_name || null,
     input.notes || null,
+    input.tags ? JSON.stringify(input.tags) : null,
+    input.dnc ? 1 : 0,
     id,
   );
 

@@ -5,6 +5,7 @@ const automationRepository = require('../repositories/automationRepository');
 const webhooksRepository = require('../repositories/webhooksRepository');
 const messagesRepository = require('../repositories/messagesRepository');
 const smsGateClient = require('./smsGateClient');
+const aiService = require('./ai');
 
 const webhookClient = axios.create({ timeout: 10000 });
 let automationCycleRunning = false;
@@ -213,7 +214,7 @@ async function processInboundMessage(message) {
         action_taken: outcome.action,
         result: 'success',
       });
-      return;
+      // Removed return to allow rule chaining
     } catch (error) {
       automationRepository.insertLog({
         rule_id: rule.id,
@@ -223,7 +224,6 @@ async function processInboundMessage(message) {
         result: 'failed',
         error: error.message,
       });
-      return;
     }
   }
 }
@@ -248,6 +248,11 @@ async function syncInboundMessagesFromGateway() {
         continue;
       }
 
+      // Automatically evaluate AI context for smart replies & sentiment mapping
+      const history = messagesRepository.listConversationByPhone(phone) || [];
+      const { sentiment } = await aiService.analyzeMessage(body);
+      const draft = await aiService.draftReply(body, history);
+
       messagesRepository.insertMessage({
         id,
         direction: 'inbound',
@@ -256,6 +261,11 @@ async function syncInboundMessagesFromGateway() {
         status: 'received',
         tags: [],
         extracted: null,
+        unread: 1,
+        pinned: sentiment === 'urgent' || sentiment === 'negative' ? 1 : 0,
+        notes: draft || '',
+        sentiment: sentiment,
+        segments: 1
       });
     }
   } catch {

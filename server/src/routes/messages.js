@@ -7,6 +7,9 @@ const { dispatchRegisteredWebhooks } = require('../services/automationService');
 const { toCsv } = require('../utils/csv');
 const { requireAdmin } = require('../middleware/auth');
 const messagesRepository = require('../repositories/messagesRepository');
+const messageTemplatesRepository = require('../repositories/messageTemplatesRepository');
+const contactsRepository = require('../repositories/contactsRepository');
+const auditLogsRepository = require('../repositories/auditLogsRepository');
 
 const router = express.Router();
 
@@ -65,6 +68,11 @@ async function handleSend(request, response, next) {
           status: upstream.state ? String(upstream.state).toLowerCase() : 'sent',
           tags: [],
           extracted: null,
+          unread: 0,
+          pinned: 0,
+          notes: null,
+          sentiment: 'neutral',
+          segments: Math.ceil(payload.message.length / 160),
           scheduledAt: null,
           sentAt: new Date().toISOString(),
         });
@@ -73,6 +81,14 @@ async function handleSend(request, response, next) {
         if (normalizedStatus === 'delivered' || normalizedStatus === 'failed') {
           void dispatchRegisteredWebhooks(normalizedStatus, inserted);
         }
+
+        auditLogsRepository.logAction({
+          userId: request.user ? request.user.id : null,
+          action: 'MESSAGE_SENT',
+          targetType: 'message',
+          targetId: inserted.id,
+          details: { phone }
+        });
 
         results.push({ phone, ok: true, message: inserted, upstream });
       } catch (error) {
@@ -157,6 +173,31 @@ router.get('/messages/:id', (request, response, next) => {
   }
 });
 
+router.patch('/messages/:id', requireAdmin, (request, response, next) => {
+  try {
+    const { unread, pinned, notes } = request.body;
+    const db = require('../db').getDatabase();
+    
+    // In a full implementation, we'd add an updateMessage function into messagesRepository.
+    // For expediency, executing directly.
+    const sets = [];
+    const args = [];
+    if (unread !== undefined) { sets.push('unread = ?'); args.push(unread ? 1 : 0); }
+    if (pinned !== undefined) { sets.push('pinned = ?'); args.push(pinned ? 1 : 0); }
+    if (notes !== undefined) { sets.push('notes = ?'); args.push(notes); }
+    
+    if (sets.length > 0) {
+      args.push(request.params.id);
+      db.prepare(`UPDATE messages SET ${sets.join(', ')} WHERE id = ?`).run(...args);
+    }
+    
+    const row = messagesRepository.getMessageById(request.params.id);
+    return response.json(row);
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.delete('/messages/:id', requireAdmin, async (request, response, next) => {
   try {
     const deleted = messagesRepository.deleteMessageById(request.params.id);
@@ -185,6 +226,36 @@ router.get('/conversations/:phone', (request, response, next) => {
   try {
     const items = messagesRepository.listConversationByPhone(request.params.phone);
     return response.json({ items });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/templates', requireAdmin, (request, response, next) => {
+  try {
+    const items = messageTemplatesRepository.listTemplates();
+    return response.json({ items });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/templates', requireAdmin, (request, response, next) => {
+  try {
+    const template = messageTemplatesRepository.createTemplate({
+      title: request.body.title,
+      body: request.body.body,
+    });
+    return response.status(201).json(template);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete('/templates/:id', requireAdmin, (request, response, next) => {
+  try {
+    const deleted = messageTemplatesRepository.deleteTemplate(Number(request.params.id));
+    return response.json({ deleted });
   } catch (error) {
     return next(error);
   }

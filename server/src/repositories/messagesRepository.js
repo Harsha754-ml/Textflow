@@ -28,6 +28,12 @@ function mapMessageRow(row) {
     status: row.status,
     tags: parseJsonOrDefault(row.tags, []),
     extracted: parseJsonOrDefault(row.extracted, null),
+    unread: !!row.unread,
+    pinned: !!row.pinned,
+    notes: row.notes,
+    readAt: row.read_at,
+    sentiment: row.sentiment,
+    segments: row.segments,
     scheduledAt: row.scheduled_at,
     sentAt: row.sent_at,
     createdAt: row.created_at,
@@ -41,8 +47,8 @@ function insertMessage(input) {
 
   db.prepare(
     `
-    INSERT INTO messages (id, direction, phone, body, status, tags, extracted, scheduled_at, sent_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO messages (id, direction, phone, body, status, tags, extracted, unread, pinned, notes, read_at, sentiment, segments, scheduled_at, sent_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `,
   ).run(
     id,
@@ -52,6 +58,12 @@ function insertMessage(input) {
     input.status,
     input.tags ? JSON.stringify(input.tags) : null,
     input.extracted ? JSON.stringify(input.extracted) : null,
+    input.unread !== undefined ? (input.unread ? 1 : 0) : 1,
+    input.pinned ? 1 : 0,
+    input.notes || null,
+    input.readAt || null,
+    input.sentiment || null,
+    input.segments || 1,
     input.scheduledAt || null,
     input.sentAt || null,
   );

@@ -15,6 +15,8 @@ module.exports = [
     phone TEXT UNIQUE NOT NULL,
     group_name TEXT,
     notes TEXT,
+    tags TEXT,
+    dnc INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )
   `,
@@ -27,6 +29,12 @@ module.exports = [
     status TEXT,
     tags TEXT,
     extracted TEXT,
+    unread INTEGER DEFAULT 1,
+    pinned INTEGER DEFAULT 0,
+    notes TEXT,
+    read_at DATETIME,
+    sentiment TEXT,
+    segments INTEGER DEFAULT 1,
     scheduled_at DATETIME,
     sent_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -65,6 +73,25 @@ module.exports = [
     secret TEXT,
     enabled INTEGER DEFAULT 1,
     events TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+  `,
+  `
+  CREATE TABLE IF NOT EXISTS message_templates (
+    id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+  `,
+  `
+  CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER,
+    action TEXT NOT NULL,
+    target_type TEXT,
+    target_id TEXT,
+    details TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )
   `,
