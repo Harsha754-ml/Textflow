@@ -14,7 +14,8 @@ export function SmsForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const characterCount = message.length;
-  const isOverLimit = characterCount > MAX_MESSAGE_LENGTH;
+  const segments = Math.ceil(characterCount / 160) || 1;
+  const isOverLimit = characterCount > 1600; // soft max limit just to prevent abuse
   const canSubmit = useMemo(() => phoneNumbers.length > 0 && message.trim().length > 0 && !isSubmitting && !isOverLimit, [phoneNumbers.length, message, isSubmitting, isOverLimit]);
 
   const addPhoneNumber = (value) => {
@@ -57,7 +58,7 @@ export function SmsForm() {
           <div className="panel-kicker">Compose</div>
           <h2>Compose message</h2>
         </div>
-        <div className="muted">{characterCount} characters</div>
+        <div className="muted">{characterCount} chars | {segments} segment{segments > 1 ? 's' : ''}</div>
       </div>
 
       <label className="field">
@@ -92,7 +93,7 @@ export function SmsForm() {
         <div className="textarea-wrap">
           <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={8} placeholder="Type the SMS content here" />
           <div className={`char-counter ${isOverLimit ? 'over' : ''}`}>
-            {characterCount}/{MAX_MESSAGE_LENGTH}
+            {characterCount} chars | {segments} segment(s)
           </div>
         </div>
       </label>

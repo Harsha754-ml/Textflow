@@ -195,6 +195,26 @@ export function InboxPage() {
                   <div>{message.message || message.body}</div>
                 </div>
                 {renderExtractedData(message.extracted)}
+                {message.notes && !isOutbound ? (
+                  <div className="inbox-extracted-list" style={{ marginTop: '0.5rem', background: '#ffe4e1' }}>
+                    <strong>Smart Reply Draft:</strong> {message.notes}
+                    {isAdmin && (
+                      <button 
+                        type="button" 
+                        onClick={() => setReply(message.notes)} 
+                        className="btn btn-primary" 
+                        style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
+                      >
+                        Use Draft
+                      </button>
+                    )}
+                  </div>
+                ) : null}
+                {message.sentiment && message.sentiment !== 'neutral' ? (
+                  <div style={{ fontSize: '0.8rem', color: message.sentiment === 'negative' ? 'red' : 'orange' }}>
+                    Sentiment: {message.sentiment}
+                  </div>
+                ) : null}
                 <div className={`inbox-message-time ${bubbleClassName}`}>{timestamp}</div>
               </div>
             );

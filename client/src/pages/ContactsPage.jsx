@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { createContact, deleteContact, getContacts } from '../api/client';
+import { createContact, deleteContact, getContacts, importContacts } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import Papa from 'papaparse';
 
 export function ContactsPage() {
   const { user } = useAuth();
@@ -36,6 +37,36 @@ export function ContactsPage() {
     }
   };
 
+  const onImport = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        try {
+          const csvText = Papa.unparse(results.data);
+          // Assuming an api method export: export const importContacts = (csv) => ...
+          // Here we just use fetch or axios. Assuming api/client.js is capable.
+          // For now, we will simulate or use raw fetch if importContacts is mapped.
+          // Actually, let's just create them one by one if missing method, or we added it to backend.
+          for (const item of results.data) {
+             if(item.phone && item.name) {
+                await createContact({
+                  name: item.name, phone: item.phone, group_name: item.group || item.group_name, tags: item.tags ? [item.tags] : [], dnc: item.dnc === 'true'
+                });
+             }
+          }
+          toast.success('Contacts imported!');
+          await refresh();
+        } catch(e) {
+          toast.error('Import failed');
+        }
+      }
+    });
+  };
+
   const onDelete = async (id) => {
     try {
       await deleteContact(id);
@@ -61,8 +92,19 @@ export function ContactsPage() {
             <input placeholder="Name" value={form.name} onChange={(e) => setForm((x) => ({ ...x, name: e.target.value }))} required />
             <input placeholder="Phone (+E.164)" value={form.phone} onChange={(e) => setForm((x) => ({ ...x, phone: e.target.value }))} required />
             <input placeholder="Group" value={form.group_name} onChange={(e) => setForm((x) => ({ ...x, group_name: e.target.value }))} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+               <input type="checkbox" checked={form.dnc || false} onChange={(e) => setForm((x) => ({ ...x, dnc: e.target.checked }))} />
+               DNC (Do Not Contact)
+            </label>
             <button type="submit" className="btn btn-primary">Add</button>
           </form>
+        ) : null}
+
+        {isAdmin ? (
+          <div style={{ padding: '1rem', background: '#f5f5f5', marginTop: '1rem' }}>
+            <strong>Bulk Import CSV</strong><br/>
+            <input type="file" accept=".csv" onChange={onImport} />
+          </div>
         ) : null}
 
         <div className="table-wrap">
