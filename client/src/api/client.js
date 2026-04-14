@@ -219,3 +219,13 @@ export async function testWebhook(id) {
   const response = await client.post(`/webhooks/${id}/test`);
   return response.data;
 }
+
+export async function getAnalyticsHeatmap(params = {}) {
+  const response = await client.get('/analytics/heatmap', { params });
+  return response.data;
+}
+
+export async function getAnalyticsResponseTime(params = {}) {
+  const response = await client.get('/analytics/response-time', { params });
+  return response.data;
+}

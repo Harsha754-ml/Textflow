@@ -18,6 +18,24 @@
   --success: #22c55e;
 }
 
+:root.light {
+  color-scheme: light;
+  --bg: #ffffff;
+  --sidebar-bg: #f9fafb;
+  --surface: #ffffff;
+  --surface-elevated: #f3f4f6;
+  --border: #e5e7eb;
+  --border-soft: #d1d5db;
+  --text: #111827;
+  --text-body: #374151;
+  --text-muted: #6b7280;
+  --text-dim: #9ca3af;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --danger: #dc2626;
+  --success: #16a34a;
+}
+
 * {
   box-sizing: border-box;
 }

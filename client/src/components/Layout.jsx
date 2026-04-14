@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Activity, History, Send, Server, Archive, MessageSquare, Users, Bot, BarChart3, Settings } from 'lucide-react';
+import { Activity, History, Send, Server, Archive, MessageSquare, Users, Bot, BarChart3, Settings, Moon, Sun } from 'lucide-react';
 import { AppDataProvider, useAppData } from '../context/AppDataContext';
 import { useAuth } from '../context/AuthContext';
 import { formatLatency } from '../utils/format';
@@ -61,10 +62,25 @@ function Topbar() {
   const { logout } = useAuth();
   const connected = Boolean(status?.reachable);
 
+  const [isLight, setIsLight] = useState(() => localStorage.getItem('theme') === 'light');
+
+  useEffect(() => {
+    if (isLight) {
+      document.documentElement.classList.add('light');
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
+    }
+  }, [isLight]);
+
   return (
     <header className="topbar">
       <h1>SMS Dashboard</h1>
       <div className="topbar-status-row">
+        <button type="button" className="icon-btn" onClick={() => setIsLight(!isLight)} aria-label="Toggle Theme">
+          {isLight ? <Moon size={16} /> : <Sun size={16} />}
+        </button>
         <div className={`topbar-connection ${connected ? 'online' : 'offline'}`}>
           <span className="topbar-connection-dot" />
           <span className="topbar-connection-label">{connected ? 'Connected' : 'Offline'}</span>
