@@ -31,6 +31,25 @@ function runSchema(database) {
   for (const statement of schemaStatements) {
     database.prepare(statement).run();
   }
+
+  const migrations = [
+    "ALTER TABLE messages ADD COLUMN unread INTEGER DEFAULT 1",
+    "ALTER TABLE messages ADD COLUMN pinned INTEGER DEFAULT 0",
+    "ALTER TABLE messages ADD COLUMN notes TEXT",
+    "ALTER TABLE messages ADD COLUMN read_at DATETIME",
+    "ALTER TABLE messages ADD COLUMN sentiment TEXT DEFAULT 'neutral'",
+    "ALTER TABLE messages ADD COLUMN segments INTEGER DEFAULT 1",
+    "ALTER TABLE contacts ADD COLUMN tags TEXT",
+    "ALTER TABLE contacts ADD COLUMN dnc INTEGER DEFAULT 0"
+  ];
+
+  for (const migration of migrations) {
+    try {
+      database.prepare(migration).run();
+    } catch (e) {
+      // Ignore errors for already existing columns
+    }
+  }
 }
 
 function bootstrapAdminUser(database) {
